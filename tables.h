@@ -1,6 +1,8 @@
 #ifndef __TABLES__
 #define __TABLES__
 
+#include "util.h"
+
 struct Data;                /* Structure representant une Donnée. */
 struct Column;              /* Structure d'une colonne */
 struct Table;               /* Structure representant une Table. */

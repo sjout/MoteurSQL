@@ -5,6 +5,7 @@
 
 #define COND_JOIN   500
 #define TABLE_SEL   501
+#define PROD_CARTE  502
 
 typedef struct nodeTree_        *   nodeTree;
 typedef struct joinTree_        *   joinTree;
@@ -32,31 +33,30 @@ struct nodeTree_
         struct nodeJoin
         {
             conditionSelect C;
-            struct table * T;
+            struct Table *  T;
         } CS;
-    } u;  
+    } u;
 };
 
 struct joinTree_
 {
     nodeTree val;
-    joinTree fg, fd;
+    joinTree left, right, father;
 };
 
-/*
- * Constructeur
- */
 conditionJoin   ConditionJoin();
 conditionSelect ConditionSelect();
-nodeTree        NodeTree(int, conditionJoin, conditionSelect, struct table *);
-joinTree        JoinTree(nodeTree, joinTree, joinTree);
+nodeTree        NodeTree(int, conditionJoin, conditionSelect, struct Table *);
+joinTree        JoinTree(nodeTree, joinTree, joinTree, joinTree);
 
-/*
- * Méthodes
- */
 void            add_conditionJoin(conditionJoin, tree);
 void            add_conditionSelect(conditionSelect, tree);
 
+struct Table *  getTable(const char *);
 
+void            set_array_from(tree);
+joinTree        init_tree();
+void            set_tree(tree);
+int             calculus(tree);
 
-#endif 
+#endif

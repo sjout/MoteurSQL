@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
+#include "util.h"
 #include "tables.h"
 #include "csv_parseur.h"
 #include "queue.h"
@@ -32,8 +32,8 @@ static void is_error(const int i, const int n)
     if (i == SYNT_ERR && n != -1)
     {
         fprintf(stderr, "%sLine in file : %d\n", errors[SYNT_ERR], n);
-    }  
-    else 
+    }
+    else
         fprintf(stderr, "%s", errors[i]);
     exit(EXIT_FAILURE);
 }
@@ -49,8 +49,8 @@ void set_name(const char *const str, const int pos, const int n)
     for (i = 0; split[i] != 0; i++);
     if (i > 1)
         is_error(SYNT_ERR, n);
-    
-    if (!(array_tables[pos].name = (char *) malloc(sizeof(char) * (strlen(split[0]) + 1))))
+
+    if (!(array_tables[pos].name = check_malloc(sizeof(char) * (strlen(split[0]) + 1))))
         is_error(MEM_ERR, n);
     strcpy(array_tables[pos].name, split[0]);
     for (i = 0; split[i] != 0; i++)
@@ -60,11 +60,11 @@ void set_name(const char *const str, const int pos, const int n)
 void set_columns(const char *const str, const int pos, const int n)
 {
     char **split = csv_parser_line(str, n);
-    int i = 0, j = 0, count = 0, save = 0; 
+    int i = 0, j = 0, count = 0, save = 0;
     for (i = 0; split[i] != 0;i++);
-    
+
     array_tables[pos].width = i;
-    if (!(array_tables[pos].columns = (struct Column *) malloc(sizeof(struct Column) * i)))
+    if (!(array_tables[pos].columns = check_malloc(sizeof(struct Column) * i)))
         is_error(MEM_ERR, n);
 
     for (i = 0; split[i] != 0; i++)
@@ -88,7 +88,7 @@ void set_columns(const char *const str, const int pos, const int n)
         if (count == 0)
             is_error(SYNT_ERR, n);
 
-        if (!(array_tables[pos].columns[i].name = (char *) malloc(sizeof(char) * (count + 1))))
+        if (!(array_tables[pos].columns[i].name = check_malloc(sizeof(char) * (count + 1))))
             is_error(MEM_ERR, n);
         
         array_tables[pos].columns[i].name[count] = '\0';
@@ -107,11 +107,11 @@ void set_columns(const char *const str, const int pos, const int n)
 
         if (!(strcmp("string", split[i] + j - count)))
         {
-            array_tables[pos].columns[i].is_string = true;
+            array_tables[pos].columns[i].is_string = TRUE;
         }
         else if (!(strcmp("int", split[i] + j - count)))
         {
-            array_tables[pos].columns[i].is_string = false;
+            array_tables[pos].columns[i].is_string = FALSE;
         }
         else 
             is_error(SYNT_ERR, n);
@@ -134,7 +134,7 @@ void set_data(const char *const str, const int pos, const int index, const int n
     {
         if (array_tables[pos].columns[i].is_string)
         {
-            if (!(array_tables[pos].content[index * array_tables[pos].width + i].str = (char *) malloc(sizeof(char) * (strlen(split[i]) + 1))))
+            if (!(array_tables[pos].content[index * array_tables[pos].width + i].str = check_malloc(sizeof(char) * (strlen(split[i]) + 1))))
                 is_error(MEM_ERR, n);
             strcpy(array_tables[pos].content[index * array_tables[pos].width + i].str, split[i]);
         }
@@ -154,7 +154,6 @@ void set_data(const char *const str, const int pos, const int index, const int n
                     split[i][j] = '\0';
                 }
             }
-               
             array_tables[pos].content[index * array_tables[pos].width + i].value = atoi(split[i]);
         }
     }
@@ -178,10 +177,10 @@ void set_tables(const char *const path)
 
     if (!(file = fopen(path, "r")))
         is_error(FILE_ERR, -1);
-    if (!(Q = (struct Queue *) malloc(sizeof(struct Queue))))
+    if (!(Q = check_malloc(sizeof(struct Queue))))
         is_error(MEM_ERR, -1);
     init_queue(Q);
-    if (!(table_lenght = (int *) malloc(sizeof(int))))
+    if (!(table_lenght = check_malloc(sizeof(int))))
         is_error(MEM_ERR, -1);
     table_lenght[0] = 0;
     while (fgets(buff, MAX_STR, file))
@@ -203,7 +202,7 @@ void set_tables(const char *const path)
     }
     if (size == 0)
         is_error(SYNT_ERR, -1);
-    if (!(array_tables = (struct Table *) malloc(sizeof(struct Table) * size)))
+    if (!(array_tables = check_malloc(sizeof(struct Table) * size)))
         is_error(MEM_ERR, 0);
     for (ind = 0; ind < size; ind++)
     {
@@ -232,7 +231,7 @@ void set_tables(const char *const path)
         if (Q->first == 0)
             is_error(SYNT_ERR, count);
 
-        if (!(array_tables[ind].content = (struct Data *) malloc(sizeof(struct Data) * array_tables[ind].width * array_tables[ind].length)))
+        if (!(array_tables[ind].content = check_malloc(sizeof(struct Data) * array_tables[ind].width * array_tables[ind].length)))
             is_error(MEM_ERR, count);
 
         pos = 0;

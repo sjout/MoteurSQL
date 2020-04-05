@@ -78,7 +78,11 @@ static int delimiters[][2] =
 	{')', RPAREN},
 	{'=', EQ},
 	{'>', GT},
-	{'<', LT}
+	{'<', LT},
+    {'+', PLUS},
+    {'-', MINUS},
+    {'*', TIMES},
+    {'+', DIVIDE}
 };
 
 void set_edges(int state, char start, char end, int at)
@@ -222,7 +226,7 @@ queue lexer(FILE *file)
 	str[size - 1] = '\0';
 	set_automata();
 	int val = -1;
-
+	
 	while ((c = fgetc(file)) != EOF && good)
 	{
 		free_str = TRUE;
@@ -242,7 +246,7 @@ queue lexer(FILE *file)
                     syntax_error(str);
 				if (val == GT)
 				{
-					if (c = fgetc(file) != EOF)
+					if ((c = fgetc(file)) != EOF)
 					{
 						if (c == '=')
 							T = Token(GE, GE, 0);
@@ -254,7 +258,7 @@ queue lexer(FILE *file)
 				}
 				else if (val == LT)
 				{
-					if (c = fgetc(file) != EOF)
+					if ((c = fgetc(file)) != EOF)
 					{
 						if (c == '=')
 							T = Token(GE, GE, 0);
@@ -264,6 +268,14 @@ queue lexer(FILE *file)
 					else
 						T = Token(LT, LT, 0);
 				}
+                else if (val == PLUS)
+                    T = Token(PLUS, PLUS, 0);
+                else if (val == MINUS)
+                    T = Token(MINUS, MINUS, 0);
+                else if (val == TIMES)
+                    T = Token(TIMES, TIMES, 0);
+                else if (val == DIVIDE)
+                    T = Token(DIVIDE, DIVIDE, 0);
 				else
 					T = Token(val, val, 0);
 				enqueue(Q, T);

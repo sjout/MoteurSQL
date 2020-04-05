@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
+#include "util.h"
 #include "csv_parseur.h"
 
 static const char *const errors[] = 
@@ -42,7 +42,7 @@ Fonctions de traitement d'une chaine de caractères.
 char ** csv_parser_line(const char *str, const int n)
 {
     char **split = 0;
-    bool in_quotes = false, no_quotes = false, after_comma = false;
+    bool in_quotes = FALSE, no_quotes = TRUE, after_comma = FALSE;
     int index = 0, count = 0, lg = 0, pos = 0, space = 0;
 
     while (str[index] != '\0' && str[index] != '\n' && str[index] != '\r')
@@ -50,30 +50,30 @@ char ** csv_parser_line(const char *str, const int n)
         if (str[index] == ',')
             count++;
         if (str[index] == '"' && !in_quotes)
-            in_quotes = true;
+            in_quotes = TRUE;
         else if (str[index] == '"' && in_quotes)
-            in_quotes = false;
+            in_quotes = FALSE;
         index++;   
     }
-    if (!(split = (char **) malloc(sizeof(char *) * (count + 2))))
+    if (!(split = check_malloc(sizeof(char *) * (count + 2))))
         is_error(MEME_ERR, n);
     split[count + 1] = 0;
 
     for (index = 0; str[index] != '\0' && str[index] != '\n' && str[index] != '\r';)
     {
-        no_quotes = false, lg = 0, after_comma = false;
+        no_quotes = FALSE, lg = 0, after_comma = FALSE;
         while (str[index] != '\0' && str[index] != '\n' && str[index] != '\r' && str[index] != ',')
         {
             space = 0;
             while (str[index] != '\0' && str[index] != '\n' && str[index] != '\r' && (str[index] == ' ' || str[index] == '\t') && !in_quotes)
                 index++, space++;
             if (str[index] == '"' && !in_quotes)
-                in_quotes = true;
+                in_quotes = TRUE;
             else if (str[index] == '"' && in_quotes)
-                in_quotes = false;
+                in_quotes = FALSE;
 
             if (str[index] != '\0' && str[index] != '"' && str[index] != ' ' && str[index] != '\t' && str[index] != '\r' && str[index] != '\n' && !in_quotes && str[index] != ',')
-                no_quotes = true;
+                no_quotes = TRUE;
             if (no_quotes)
                 is_error(SYNT_ERR, n);
             if (str[index] != '\0' && str[index] != ',' && str[index] != '\n' && str[index] != '\r') 
@@ -81,13 +81,13 @@ char ** csv_parser_line(const char *str, const int n)
         }
         if (lg == 0)
             is_error(SYNT_ERR, n);
-        if (!(split[pos] = (char *) malloc(sizeof(char) * (lg - 1))))
+        if (!(split[pos] = check_malloc(sizeof(char) * (lg - 1))))
             is_error(MEME_ERR, n);
         split[pos][lg - 2] = '\0';
         strncpy(split[pos], str + index - lg -space + 1, lg - 2);
         pos++;
         if (str[index] == ',') 
-            after_comma = true;
+            after_comma = TRUE;
         if (str[index] != '\n' && str[index] != '\0' && str[index] != '\r')
             index++;
     }
@@ -111,13 +111,13 @@ char ** split(char *s, char delim)
         if (s[i] == delim)
             count++;
 
-    res = malloc((count + 2) * sizeof(char*)); /* allocation du résultat */
+    res = check_malloc((count + 2) * sizeof(char*)); /* allocation du résultat */
     i = 0;
     do{
         l = 0;
         while(s[i] != '\0' && s[i] != delim)
             l++, i++;
-        res[n]=malloc(sizeof(char) * (l + 1));
+        res[n] = check_malloc(sizeof(char) * (l + 1));
         strncpy(res[n], s + i - l, l);
         res[n][l] = '\0';
         n++;
@@ -129,7 +129,7 @@ char ** split(char *s, char delim)
         }
     } while(s[i] != '\0');
     if(after_sep){ /* sep suivi de fin de chaîne */
-        res[n] = malloc(sizeof(char));
+        res[n] = check_malloc(sizeof(char));
         res[n][0]='\0';
         n++;
     }

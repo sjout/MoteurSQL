@@ -16,7 +16,7 @@ string		String(const char *);
  */
 void *		check_malloc(int);
 void *		check_realloc(void *, int);
-FILE *      check_open(const char *);
+FILE *      	check_open(const char *);
 
 /*
  *  Gestion des erreurs.
@@ -33,6 +33,7 @@ FILE *      check_open(const char *);
 #define F_ID_ERR          0
 #define F_RENAME_ERR      1
 #define F_NOT_GRAM_ERR    2
+#define F_NOT_FULL        3
 
 #define W_EMPTY_PAREN_ERR 0
 #define W_PAREN_ERR       1

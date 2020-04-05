@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include "util.h"
 #include "queue.h"
 
 void init_queue(struct Queue *Q)
@@ -18,7 +19,7 @@ void init_element(struct Element *e)
 
 void add_queue(struct Queue *Q, char *str)
 {
-    struct Element *e = (struct Element *) malloc(sizeof (struct Element));
+    struct Element *e = check_malloc(sizeof (struct Element));
     struct Element *tmp = 0;
 
     init_element(e);
@@ -26,6 +27,7 @@ void add_queue(struct Queue *Q, char *str)
     assert(Q != 0 && str != 0);
 
     e->str = (char *) malloc(sizeof(char) * (strlen(str) + 1));
+    e->str = check_malloc(sizeof(char) * (strlen(str) + 1));
     strcpy(e->str, str);
 
     if (Q->first == 0)

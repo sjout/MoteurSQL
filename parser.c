@@ -76,6 +76,8 @@ void add_tree(tree T, tree N)
     list New = List(N, 0);
     list ptr = T->L;
 
+    N->father = T;
+
     if (ptr == 0)
         T->L = New;
     else
@@ -208,7 +210,10 @@ void expr_select(queue Q, tree Expression, int *count_ID, token *R, stack S)
                 add_tree(Expression, New2->L->T);
             else
                 lexical_error_select(S_EMPTY_PAREN_ERR);
-            expr_select(Q, Expression, count_ID, R, S);
+            if (Expression->T->type == TIMES || Expression->T->type == DIVIDE)
+                expr_select(Q, Expression->father, count_ID, R, S);
+            else
+                expr_select(Q, Expression, count_ID, R, S);
         }
         else if (T->type == RPAREN)
         {
@@ -240,7 +245,8 @@ void expr_select(queue Q, tree Expression, int *count_ID, token *R, stack S)
         }
         else if (is_operator_arith(T->type))
         {
-            lexical_error_select(S_OPERANDE_ERR);
+            if (Expression->L == 0)
+                lexical_error_select(S_OPERANDE_ERR);
             Li = get_last_and_replace(Expression);
             add_tree(New, Li->T);
             Li->T->father = New;
@@ -272,32 +278,36 @@ void expr_select(queue Q, tree Expression, int *count_ID, token *R, stack S)
 void expr_from(queue Q, tree Expression, int *count_ID, token *R)
 {
     tree New = 0, New2 = 0, Table = 0;
-    list Li = 0;
     token T = dequeue(Q);
     *R = T;
     if (T != 0 && !is_keyword(T->type) && !is_delimiter(T->type))
     {
-        Table = Tree(Token(RENAME, 0, 0), Expression, 0);
         New = Tree(T, Table, 0);
         if (T->type == ID)
         {
             if ((*count_ID) == 1)
                 lexical_error_from(F_ID_ERR);
             (*count_ID)++;
-            add_tree(Table, New);
             if ((T = dequeue(Q)) != 0 && T->type != ID && T->type != COMMA && T->type != SEMICOLON && !is_keyword(T->type))
                 lexical_error_from(F_RENAME_ERR);
-            add_tree(Expression, New);
-            if (T->type == COMMA || T->type == SEMICOLON || is_keyword(T->type))
+            if (T == 0)
+                lexical_error_from(F_NOT_FULL);
+            else if (T->type == COMMA || T->type == SEMICOLON || is_keyword(T->type))
             {
+                add_tree(Expression, New);
                 *R = T;
                 return;
             }
+            Table = Tree(Token(RENAME, 0, 0), Expression, 0);
+            add_tree(Table, New), New->father = Table;
             New2 = Tree(T, Table, 0);
             add_tree(Table, New2);
             add_tree(Expression, Table);
             if ((T = dequeue(Q)) != 0 && T->type != COMMA && T->type != SEMICOLON && !is_keyword(T->type))
                 lexical_error_from(F_RENAME_ERR);
+            if (T == 0)
+                lexical_error_from(F_NOT_FULL);
+            *R = T;
         }
         else
             lexical_error_from(F_NOT_GRAM_ERR);
@@ -511,15 +521,13 @@ void query_tree(queue Q, tree T)
                     tmp = Tree(Token(EXPR_SEL, 0, 0), sel, 0);
                     add_tree(sel, tmp);
                     expr_select(Q, tmp, &count_ID, &R, S);
-                }    
+                }
             }
             else if(set == 2)
             {
                 while (R != 0 && !is_keyword(R->type))
                 {
                     count_ID = 0;
-                    tmp = Tree(Token(EXPR_FROM, 0, 0), from, 0);
-                    add_tree(from, tmp);
                     expr_from(Q, tmp, &count_ID, &R);
                 }
             }
@@ -568,6 +576,18 @@ void print_tree(tree T, int i)
         tmp = tmp->next;
     }
 }
+
+tree AST(FILE *f)
+{
+	queue Q = lexer(f);
+	tree T = Tree(Token(QUERY, 0, 0), 0, 0);
+	query_tree(Q, T);
+
+	free_lexer(Q);
+
+	return T;
+}
+
 /*
 int main(int argc, char **argv)
 {

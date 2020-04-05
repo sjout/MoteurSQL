@@ -18,7 +18,8 @@ static char *error_from[] =
 {
     "F_Erreur : Une expression du FROM ne peut contenir plus d'une colonne.\n",
     "F_Erreur : Mauvais format -> Table Rename.\n",
-    "F_Erreur : Non inclus dans la grammaire du FROM.\n"
+    "F_Erreur : Non inclus dans la grammaire du FROM.\n",
+    "F_Erreur : Requête incomplete.\n"
 };
 static char *error_where[] =
 {
