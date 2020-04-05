@@ -1,0 +1,2 @@
+SELECT t1.nom, t2.prenom FROM t1 ren1, t2 ,t3 WHERE t1.age = t2.age AND t1.age = "test" AND t1.age > 10;
+
