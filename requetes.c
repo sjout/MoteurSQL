@@ -10,6 +10,9 @@
 static struct Table *array_from = 0;
 static int           size_from  = 0;
 
+static struct select *array_sel = 0;
+static int            size_sel  = 0;
+
 extern struct Table *array_tables;
 extern int           size;
 
@@ -106,6 +109,26 @@ int getColumn(struct Table *T, char *str)
     return -1;
 }
 
+void set_array_sel(tree select)
+{
+    int i;
+    list tmp = select->L;
+
+    while (tmp != 0)
+    {
+        size_sel++;
+        tmp = tmp->next;
+    }
+    tmp = select->L;
+    array_sel = check_malloc(sizeof(struct select) * size_sel);
+
+    for (i = 0; i < size_sel; i++)
+    {
+        array_sel[i].T = getTable_from(tmp->T->L->T->L->T->T->u.str);
+        array_sel[i].col = getColumn(array_sel[i].T, tmp->T->L->T->L->next->T->T->u.str);
+        tmp = tmp->next;
+    }
+}
 void set_array_from(tree from)
 {
     struct Table *T = 0;
@@ -290,6 +313,7 @@ void set_tree(tree conds, joinTree T)
                     for (k = ind; k < Cjoin->count_element - 1; k++)
                         Cjoin->T[k] = Cjoin->T[k + 1];
                     Cjoin->count_element -= 1;
+                    ind -= 1;
                 }
             }
             for (ind = 0; ind < Csel->count_element; ind++)
@@ -476,7 +500,6 @@ bool check_join(conditionJoin Cjoin, int index, struct Table *T, struct pos *ind
     string left_str = 0, right_str = 0;
     int i = 0, left_int = 0, right_int = 0, col_left = 0, col_right = 0;
     int new_ind = 0;
-
     tree param = 0;
 
     for (i = 0; i < Cjoin->count_element && check; i++)
@@ -515,6 +538,8 @@ bool check_join(conditionJoin Cjoin, int index, struct Table *T, struct pos *ind
             {
                 left_int = calculus(Cjoin->T[i]->L->T, left_table->content[index * left_table->width + col_left].value);
                 right_int = calculus(Cjoin->T[i]->L->next->T, right_table->content[new_ind * right_table->width + col_right].value);
+                printf("%s - %s\n", left_str, right_str);
+
                 switch(Cjoin->T[i]->T->type)
                 {
                 case EQ :
@@ -607,17 +632,21 @@ void nestedLoop(joinTree T, struct pos *indices, const int max_len, int curr_len
 
     if (T == 0)
     {
-        for (i = 0; i < max_len; i++)
+        for (i = 0; i < size_sel; i++)
         {
-            for (j = 0; j < indices[i].T->width; j++)
+            for (j = 0; j < max_len; j++)
             {
-                if (indices[i].T->columns[j].is_string)
-                    printf("%8s ", indices[i].T->content[indices[i].T->width * indices[i].index + j].str);
-                else
-                    printf("%8d ", indices[i].T->content[indices[i].T->width * indices[i].index + j].value);
+                if (array_sel[i].T == indices[j].T)
+                {
+                    if (indices[j].T->columns[array_sel[i].col].is_string)
+                        printf("%10s ", indices[j].T->content[indices[j].T->width * indices[j].index + array_sel[i].col].str);
+                    else
+                    printf("%10d ", indices[j].T->content[indices[j].T->width * indices[j].index + array_sel[i].col].value);
+                }
             }
         }
         printf("\n");
+
         return;
     }
 
@@ -678,12 +707,14 @@ void engine(char *csv, char *sql)
     joinTree join = 0, parcour = 0;
     list tmp = 0;
     struct pos *indices = 0;
+    int i;
 
     set_tables(csv);
     code = check_open(sql);
     query = AST(code);
 
     set_array_from(query->L->next->T->L->T);
+    set_array_sel(query->L->T);
     join = init_tree();
 
     tmp = query->L;
@@ -692,12 +723,18 @@ void engine(char *csv, char *sql)
     if (tmp != 0)
         set_tree(tmp->T->L->T->L->T, join);
 
+    parcour = join;
     indices = check_malloc(sizeof(struct pos) * size_from);
     parcour = join;
     while (parcour->left != 0)
         parcour = parcour->left;
 
+    for (i = 0; i < size_sel; i++)
+        printf("%10s ", array_sel[i].T->columns[array_sel[i].col].name);
+    printf("\n");
+
     nestedLoop(parcour, indices, size_from, 0);
+
     free_tables();
     fclose(code);
 }

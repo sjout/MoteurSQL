@@ -125,6 +125,7 @@ void set_automata()
 
 	set_edges(1, 'a', 'z', 7);
 	set_edges(7, 'a', 'z', 7);
+	set_edges(7, 'A', 'Z', 7);
 	set_edges(7, '1', '9', 7);
 	set_edges(7, '_', '_', 7);
 
@@ -223,10 +224,11 @@ queue lexer(FILE *file)
 	int c = 0, tmp = 0, pos = 0, state = 1, index = 0, size = 7;
 	bool good = TRUE, free_str = FALSE;
 	string str = check_malloc(sizeof(char) * size);
+    string tmp_str = 0;
 	str[size - 1] = '\0';
 	set_automata();
 	int val = -1;
-	
+
 	while ((c = fgetc(file)) != EOF && good)
 	{
 		free_str = TRUE;
@@ -235,8 +237,15 @@ queue lexer(FILE *file)
 			if (index != 0)
 			{
 				str[index] = '\0';
-				if (action[state] == ID || action[state] == STRING)
+				if (action[state] == ID)
 					free_str = FALSE, T = Token(action[state], 0, str);
+                else if (action[state] == STRING)
+                {
+                    tmp_str = check_malloc(sizeof(char) * (strlen(str) - 1));
+                    tmp_str[strlen(str) - 2] = '\0';
+                    strncpy(tmp_str, str + 1, strlen(str) - 2);
+                    T = Token(action[state], 0, tmp_str);
+                }
 				else if (action[state] == INT)
 					T = Token(action[state], atoi(str), 0);
 				else

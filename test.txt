@@ -1,1 +1,7 @@
-SELECT op.nom FROM operateur WHERE operateur.age > 30;
+SELECT op.numero, qual.numero, op.age, pe.numero, pe.referenceM, ma.referenceM
+FROM piece pe, operateur op, machine ma, qualif_sur qual 
+WHERE op.age > (1 + 1) * 10 AND 
+      op.numero = qual.numero AND
+      qual.numero = pe.numero AND
+      pe.referenceM = ma.referenceM
+;

@@ -50,6 +50,12 @@ struct pos
     int           index;
 };
 
+struct select
+{
+    struct Table *T;
+    int           col;
+};
+
 conditionJoin   ConditionJoin();
 conditionSelect ConditionSelect();
 nodeTree        NodeTree(int, conditionJoin, conditionSelect, struct Table *);
