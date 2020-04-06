@@ -1,1 +1,1 @@
-SELECT 10 FROM operateur op, machine ma, piece pie, qualif_sur WHERE op.numero = 12;
+SELECT op.nom FROM operateur WHERE operateur.age > 30;

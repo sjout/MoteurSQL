@@ -44,6 +44,12 @@ struct joinTree_
     joinTree left, right, father;
 };
 
+struct pos
+{
+    struct Table *T;
+    int           index;
+};
+
 conditionJoin   ConditionJoin();
 conditionSelect ConditionSelect();
 nodeTree        NodeTree(int, conditionJoin, conditionSelect, struct Table *);
@@ -53,10 +59,18 @@ void            add_conditionJoin(conditionJoin, tree);
 void            add_conditionSelect(conditionSelect, tree);
 
 struct Table *  getTable(const char *);
+struct Table *  getTable_from(const char *);
+int             getColumn(struct Table *, char *);
 
 void            set_array_from(tree);
 joinTree        init_tree();
-void            set_tree(tree);
-int             calculus(tree);
+void            set_tree(tree, joinTree);
+void            is_id_in(tree, const char *, tree *, int *);
+void            get_id(tree, tree *);
+void            count_id(tree, int *_ID);
+int             calculus(tree, int);
+
+bool            check_select(conditionSelect, int, struct Table *);
+void            engine(char *, char *);
 
 #endif

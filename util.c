@@ -42,7 +42,7 @@ static char *error_query[] =
     "Q_Erreur : Besoin d'arguments pour le SELECT.\n",
     "Q_Erreur : Besoin d'arguments pour le FROM.\n",
     "Q_Erreur : Besoin d'arguments pour le WHERE.\n",
-    "Q_Erreur : Aucune implémentation après lE WHERE.\n"
+    "Q_Erreur : Aucune implémentation après lE WHERE.\n",
     "Q_Erreur : Manque du ';' de fin.\n",
     "Q_Erreur : Requête vide.\n",
     "Q_Erreur : Manque d'un FROM.\n",

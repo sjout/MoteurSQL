@@ -336,7 +336,11 @@ void expr_where(queue Q, tree Expression, int *count_ID, token *R, stack S)
                 add_tree(Expression, New2->L->T);
             else
                 lexical_error_where(W_EMPTY_PAREN_ERR);
-            expr_where(Q, Expression, count_ID, R, S);
+            if (Expression->T->type == TIMES || Expression->T->type == DIVIDE)
+                expr_where(Q, Expression->father, count_ID, R, S);
+            else
+                expr_where(Q, Expression, count_ID, R, S);
+
         }
         else if (T->type == RPAREN)
         {
@@ -368,7 +372,8 @@ void expr_where(queue Q, tree Expression, int *count_ID, token *R, stack S)
         }
         else if (is_operator_arith(T->type))
         {
-            lexical_error_where(W_OPERANDE_ERR);
+            if (Expression->L == 0)
+                lexical_error_where(W_OPERANDE_ERR);
             Li = get_last_and_replace(Expression);
             add_tree(New, Li->T);
             Li->T->father = New;
@@ -440,6 +445,8 @@ void expr_where_full(queue Q, tree Expression, token *R)
     }
     else
         lexical_error_where(W_NO_AND_SEMICOL);
+    if (Expression->L != 0 && is_operator_join(Expression->L->T->T->type))
+        add_tree(Expression->L->T, operator);
 
     if ((*R)->type == AND)
     {
@@ -454,12 +461,15 @@ void expr_where_full(queue Q, tree Expression, token *R)
         {
             li = get_last_and_replace(Expression);
             new = Tree(*R, Expression, li);
-            add_tree(Expression, li->T);
+            add_tree(Expression, new);
         }
         expr_where_full(Q, Expression, R);
     }
     else if ((*R)->type == SEMICOLON)
-        add_tree(Expression, operator);
+    {
+        if (Expression->L == 0 || (Expression->L != 0 && !is_operator_join(Expression->L->T->T->type)))
+            add_tree(Expression, operator);
+    }
 
     free_stack(S);
 }
@@ -481,7 +491,7 @@ void query_tree(queue Q, tree T)
         if (R->type == SEL)
         {
             set = 1;
-            sel = Tree(Token(SEL, 0, 0), T, 0);
+            sel = Tree(R, T, 0);
             add_tree(T, sel);
             tmp = Tree(Token(EXPR_SEL, 0, 0), sel, 0);
             add_tree(sel, tmp);
@@ -492,7 +502,7 @@ void query_tree(queue Q, tree T)
         else if (R->type == FROM)
         {
             set = 2;
-            from = Tree(Token(FROM, 0, 0), T, 0);
+            from = Tree(R, T, 0);
             add_tree(T, from);
             tmp = Tree(Token(EXPR_FROM, 0, 0), from, 0);
             add_tree(from, tmp);
@@ -503,7 +513,7 @@ void query_tree(queue Q, tree T)
         else if (R->type == WHERE)
         {
             set = 3;
-            where = Tree(Token(WHERE, 0, 0), T, 0);
+            where = Tree(R, T, 0);
             add_tree(T, where);
             tmp = Tree(Token(EXPR_WHERE, 0, 0), where, 0);
             add_tree(where, tmp);
@@ -517,6 +527,7 @@ void query_tree(queue Q, tree T)
             {
                 while (R != 0 && !is_keyword(R->type))
                 {
+                    free(R);
                     count_ID = 0;
                     tmp = Tree(Token(EXPR_SEL, 0, 0), sel, 0);
                     add_tree(sel, tmp);
@@ -525,8 +536,9 @@ void query_tree(queue Q, tree T)
             }
             else if(set == 2)
             {
-                while (R != 0 && !is_keyword(R->type))
+                while (R != 0 && !is_keyword(R->type) && R->type != SEMICOLON)
                 {
+                    free(R);
                     count_ID = 0;
                     expr_from(Q, tmp, &count_ID, &R);
                 }
@@ -537,6 +549,8 @@ void query_tree(queue Q, tree T)
     }
     if (R == 0)
         lexical_error_query(Q_NO_SEMICOL);
+    else
+        free(R);
 
     check_query(T);
 }
@@ -554,9 +568,10 @@ void check_query(tree T)
         lexical_error_query(Q_NO_FROM);
     if (T->L->next->next == 0)
         return;
+/*
     if (T->L->next->next->T->T->type != WHERE)
         lexical_error_query(Q_NO_WHERE);
-    
+*/
 }
 
 void print_tree(tree T, int i)
@@ -569,7 +584,7 @@ void print_tree(tree T, int i)
     {
         printf("%d  ", tmp->T->T->type);
         if (tmp->T->T->type == INT)
-            printf("Node (%d): %s - %d: \n", i, id_to_str(tmp->T->T->type), tmp->T->T->u.val);
+            printf("Node (%d): %s - %d \n", i, id_to_str(tmp->T->T->type), tmp->T->T->u.val);
         else
             printf("Node (%d): %s\n", i, id_to_str(tmp->T->T->type));
         print_tree(tmp->T, i);
@@ -587,19 +602,3 @@ tree AST(FILE *f)
 
 	return T;
 }
-
-/*
-int main(int argc, char **argv)
-{
-    FILE *f = fopen(argv[1], "r");
-    queue Q = lexer(f);
-    tree T = Tree(Token(QUERY, 0, 0), 0, 0);
-
-    query_tree(Q, T);
-
-    print_tree(T, 0);
-
-	free_lexer(Q);
-	fclose(f);
-	return EXIT_SUCCESS;
-}*/

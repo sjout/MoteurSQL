@@ -16,7 +16,7 @@ string		String(const char *);
  */
 void *		check_malloc(int);
 void *		check_realloc(void *, int);
-FILE *      	check_open(const char *);
+FILE *      check_open(const char *);
 
 /*
  *  Gestion des erreurs.

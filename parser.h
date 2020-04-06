@@ -30,6 +30,7 @@ void    add_tree(tree, tree);
 
 bool    is_delimiter(int);
 bool    is_operator_comp(int);
+bool    is_operator_join(int);
 bool    is_operator_arith(int);
 bool    is_keyword(int);
 bool    is_agregate(int);
