@@ -5,7 +5,7 @@
 #include "util.h"
 #include "lexer.h"
 
-static int edges[][256] = 
+static int edges[][256] =
 {
 	{0},		/*  State 0  */
 	{0},		/*  State 1  */
@@ -37,39 +37,39 @@ static int edges[][256] =
 	{0},		/*  State 27 */
 };
 
-static int action[] = 
+static int action[] =
 {
-	-1,		/*  State 0  */
-	-1,		/*  State 1  */
-	-1,		/*  State 2  */
-	-1,		/*  State 3  */
-	-1,		/*  State 4  */
-	-1,		/*  State 5  */
-	INT,	/*  State 6  */
-	ID,		/*  State 7  */
-	-1,		/*  State 8  */
-	-1,		/*  State 9  */
-	-1,		/*  State 10 */
-	-1,		/*  State 11 */
-	SEL,	/*  State 12 */
-	-1,		/*  State 13 */
-	-1,		/*  State 14 */
-	-1,		/*  State 15 */
+	-1,     /*  State 0  */
+	-1,     /*  State 1  */
+	-1,     /*  State 2  */
+	-1,     /*  State 3  */
+	-1,     /*  State 4  */
+	-1,     /*  State 5  */
+	INT,    /*  State 6  */
+	ID,     /*  State 7  */
+	-1,     /*  State 8  */
+	-1,     /*  State 9  */
+	-1,     /*  State 10 */
+	-1,     /*  State 11 */
+	SEL,    /*  State 12 */
+	-1,     /*  State 13 */
+	-1,     /*  State 14 */
+	-1,     /*  State 15 */
 	WHERE,	/*  State 16 */
-	-1,		/*  State 17 */
-	-1,		/*  State 18 */
-	FROM,	/*  State 19 */
-	STRING,	/*  State 20 */	
-	-1,		/*  State 21 */
-	-1,		/*  State 22 */
-	AND,	/*  State 23 */
-	PLUS,	/*  State 24 */
+	-1,     /*  State 17 */
+	-1,     /*  State 18 */
+	FROM,   /*  State 19 */
+	STRING,	/*  State 20 */
+	-1,     /*  State 21 */
+	-1,     /*  State 22 */
+	AND,    /*  State 23 */
+	PLUS,   /*  State 24 */
 	MINUS,	/*  State 25 */
 	DIVIDE,	/*  State 26 */
 	TIMES,	/*  State 27 */
 };
 
-static int delimiters[][2] = 
+static int delimiters[][2] =
 {
 	{'.', DOT},
 	{',', COMMA},
@@ -79,10 +79,10 @@ static int delimiters[][2] =
 	{'=', EQ},
 	{'>', GT},
 	{'<', LT},
-    {'+', PLUS},
-    {'-', MINUS},
-    {'*', TIMES},
-    {'+', DIVIDE}
+  {'+', PLUS},
+  {'-', MINUS},
+  {'*', TIMES},
+  {'+', DIVIDE}
 };
 
 void set_edges(int state, char start, char end, int at)

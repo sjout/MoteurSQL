@@ -10,7 +10,7 @@
 "referenceM : string", "designationM : string"
 "M12"		     , "Perceuse"
 "M13"		     , "Ponceuse"
-"M14"		     , "Tour numerique"
+"M14"		     , "Tour_numerique"
 ~
 "piece"
 "referenceP : string", "designationP : string", "referenceM : string", "numero : string", "quantite : int"

@@ -189,41 +189,16 @@ bool is_agregate(int x)
     return in;
 }
 
-void expr_select(queue Q, tree Expression, int *count_ID, token *R, stack S)
+void expr_select(queue Q, tree Expression, int *count_ID, token *R)
 {
-    int x;
     tree New = 0, Sep = 0, New2 = 0;
-    list Li = 0;
     token T = dequeue(Q);
     *R = T;
 
     if (T != 0 && !is_keyword(T->type) && !is_delimiter(T->type))
     {
         New = Tree(T, 0, 0);
-        if (T->type == LPAREN)
-        {
-            push(S);
-            New2 = Tree(Token(EXPR_SEL, 0, 0), 0, 0);
-            expr_select(Q, New2, count_ID, R, S);
-            New2->father = Expression;
-            if (New2->L != 0)
-                add_tree(Expression, New2->L->T);
-            else
-                lexical_error_select(S_EMPTY_PAREN_ERR);
-            if (Expression->T->type == TIMES || Expression->T->type == DIVIDE)
-                expr_select(Q, Expression->father, count_ID, R, S);
-            else
-                expr_select(Q, Expression, count_ID, R, S);
-        }
-        else if (T->type == RPAREN)
-        {
-            x = pop(S);
-            if (Expression->father == 0 && Expression->L == 0)
-                lexical_error_select(S_EMPTY_PAREN_ERR);
-            else if (x == 0)
-                lexical_error_select(S_PAREN_ERR);
-        }
-        else if (T->type == ID)
+        if (T->type == ID)
         {
             if ((*count_ID) == 1)
                 lexical_error_select(S_COL_ERR);
@@ -239,41 +214,15 @@ void expr_select(queue Q, tree Expression, int *count_ID, token *R, stack S)
             add_tree(Expression, Sep);
             (*count_ID)++;
             if (Expression->T->type == TIMES || Expression->T->type == DIVIDE)
-                expr_select(Q, Expression->father, count_ID, R, S);
+                expr_select(Q, Expression->father, count_ID, R);
             else
-                expr_select(Q, Expression, count_ID, R, S);
-        }
-        else if (is_operator_arith(T->type))
-        {
-            if (Expression->L == 0)
-                lexical_error_select(S_OPERANDE_ERR);
-            Li = get_last_and_replace(Expression);
-            add_tree(New, Li->T);
-            Li->T->father = New;
-            New->father = Expression;
-            add_tree(Expression, New);
-            expr_select(Q, New, count_ID, R, S);
-        }
-        else if (T->type == INT)
-        {
-            if (Expression->L != 0 && (Expression->T->type == EXPR_SEL ||!is_operator_arith(Expression->T->type) || Expression->L->next != 0))
-                lexical_error_select(S_OP_ERR);
-            add_tree(Expression, New);
-            if (Expression->T->type == DIVIDE || Expression->T->type == TIMES)
-                expr_select(Q, Expression->father, count_ID, R, S);
-            else
-                expr_select(Q, Expression, count_ID, R, S);
+                expr_select(Q, Expression, count_ID, R);
         }
         else
             lexical_error_select(S_NOT_GRAM_ERR);
     }
     else
-    {
-        x = pop(S);
-        if (x != 0)
-            lexical_error_select(S_PAREN_ERR);
         return;
-    }
 }
 void expr_from(queue Q, tree Expression, int *count_ID, token *R)
 {
@@ -477,7 +426,6 @@ void expr_where_full(queue Q, tree Expression, token *R)
 void query_tree(queue Q, tree T)
 {
     assert(Q != 0 && T != 0);
-    stack S = Stack();
     token R = dequeue(Q);
     tree tmp = 0, sel = 0, from = 0, where = 0;
     int count_ID = 0, set = 0;
@@ -495,7 +443,7 @@ void query_tree(queue Q, tree T)
             add_tree(T, sel);
             tmp = Tree(Token(EXPR_SEL, 0, 0), sel, 0);
             add_tree(sel, tmp);
-            expr_select(Q, tmp, &count_ID, &R, S);
+            expr_select(Q, tmp, &count_ID, &R);
             if (tmp->L == 0)
                 lexical_error_query(Q_NO_ARGS_SEL);
         }
@@ -531,7 +479,7 @@ void query_tree(queue Q, tree T)
                     count_ID = 0;
                     tmp = Tree(Token(EXPR_SEL, 0, 0), sel, 0);
                     add_tree(sel, tmp);
-                    expr_select(Q, tmp, &count_ID, &R, S);
+                    expr_select(Q, tmp, &count_ID, &R);
                 }
             }
             else if(set == 2)
@@ -568,10 +516,8 @@ void check_query(tree T)
         lexical_error_query(Q_NO_FROM);
     if (T->L->next->next == 0)
         return;
-/*
     if (T->L->next->next->T->T->type != WHERE)
         lexical_error_query(Q_NO_WHERE);
-*/
 }
 
 void print_tree(tree T, int i)

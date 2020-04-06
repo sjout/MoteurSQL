@@ -35,7 +35,7 @@ bool    is_operator_arith(int);
 bool    is_keyword(int);
 bool    is_agregate(int);
 
-void    expr_select(queue, tree, int *, token *, stack);
+void    expr_select(queue, tree, int *, token *);
 void    expr_from(queue, tree, int *, token *);
 void    expr_where(queue, tree, int *, token *, stack);
 void    expr_where_full(queue, tree, token *);
