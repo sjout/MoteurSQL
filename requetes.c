@@ -140,7 +140,6 @@ void set_array_sel(tree select)
     {
         param = 0;
         get_dot(tmp->T->L->T, &param);
-
         if (param != 0)
         {
             array_sel[i].T = getTable_from(param->L->T->T->u.str);

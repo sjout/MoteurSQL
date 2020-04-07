@@ -512,6 +512,8 @@ void query_tree(queue Q, tree T)
                     tmp = Tree(Token(EXPR_SEL, 0, 0), sel, 0);
                     add_tree(sel, tmp);
                     expr_select(Q, tmp, &count_ID, &R);
+                    if (tmp->L == 0)
+                        lexical_error_select(S_NOT_GRAM_ERR);
                 }
             }
             else if(set == 2)
@@ -521,6 +523,8 @@ void query_tree(queue Q, tree T)
                     free(R);
                     count_ID = 0;
                     expr_from(Q, tmp, &count_ID, &R);
+                    if (tmp->L == 0)
+                        lexical_error_from(F_NOT_GRAM_ERR);
                 }
             }
             else if (set == 3)

@@ -39,18 +39,21 @@ void semantic_expr_sel(tree T)
         else
         {
             get_id(TMP->T, &param);
-            if (findTable(param->T->u.str) == 0)
-                semantic_error(NOT_FOUND_COL, param->T->u.str);
-            for (i = 0; i < size_from; i++)
+            if (param != 0)
             {
-                for (j = 0; j < array_from[i].width; j++)
+                if (param != 0 && findTable(param->T->u.str) == 0)
+                    semantic_error(NOT_FOUND_COL, param->T->u.str);
+                for (i = 0; i < size_from; i++)
                 {
-                    if (!strcmp(array_from[i].columns[j].name, param->T->u.str))
-                        count++;
+                    for (j = 0; j < array_from[i].width; j++)
+                    {
+                        if (!strcmp(array_from[i].columns[j].name, param->T->u.str))
+                            count++;
+                    }
                 }
+                if (count > 1)
+                    semantic_error(IS_STRANGE, param->T->u.str);
             }
-            if (count > 1)
-                semantic_error(IS_STRANGE, param->T->u.str);
         }
     TMP = TMP->next;
     }
