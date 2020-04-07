@@ -271,9 +271,9 @@ queue lexer(FILE *file)
 					if ((c = fgetc(file)) != EOF)
 					{
 						if (c == '=')
-							T = Token(GE, GE, 0);
+							T = Token(LE, LE, 0);
 						else
-							T = Token(GT, GT, 0);
+							T = Token(LT, LT, 0);
 					}
 					else
 						T = Token(LT, LT, 0);
@@ -296,7 +296,40 @@ queue lexer(FILE *file)
 			}
 			else
 			{
-				T = Token(val, val, 0);
+				if (val == GT)
+				{
+					if ((c = fgetc(file)) != EOF)
+					{
+						if (c == '=')
+							T = Token(GE, GE, 0);
+						else
+							T = Token(GT, GT, 0);
+					}
+					else
+						T = Token(GT, GT, 0);
+				}
+				else if (val == LT)
+				{
+					if ((c = fgetc(file)) != EOF)
+					{
+						if (c == '=')
+							T = Token(LE, LE, 0);
+						else
+							T = Token(LT, LT, 0);
+					}
+					else
+						T = Token(LT, LT, 0);
+				}
+                else if (val == PLUS)
+                    T = Token(PLUS, PLUS, 0);
+                else if (val == MINUS)
+                    T = Token(MINUS, MINUS, 0);
+                else if (val == TIMES)
+                    T = Token(TIMES, TIMES, 0);
+                else if (val == DIVIDE)
+                    T = Token(DIVIDE, DIVIDE, 0);
+                else
+                    T = Token(val, val, 0);
 				enqueue(Q, T);
 				index = 0, state = 1, size = 7;
 				if (free_str) free(str);
@@ -313,13 +346,13 @@ queue lexer(FILE *file)
             syntax_error(str);
 				if (action[state] == ID)
 					free_str = FALSE, T = Token(action[state], 0, str);
-        else if (action[state] == STRING)
-        {
-            tmp_str = check_malloc(sizeof(char) * (strlen(str) - 1));
-            tmp_str[strlen(str) - 2] = '\0';
-            strncpy(tmp_str, str + 1, strlen(str) - 2);
-            T = Token(action[state], 0, tmp_str);
-        }
+                else if (action[state] == STRING)
+                {
+                    tmp_str = check_malloc(sizeof(char) * (strlen(str) - 1));
+                    tmp_str[strlen(str) - 2] = '\0';
+                    strncpy(tmp_str, str + 1, strlen(str) - 2);
+                    T = Token(action[state], 0, tmp_str);
+                }
 				else if (action[state] == INT)
 					T = Token(action[state], atoi(str), 0);
 				else
@@ -339,12 +372,12 @@ queue lexer(FILE *file)
 				str = check_realloc(str, size);
 				str[size - 1] = '\0';
 			}
-      if (c == '"' && !in_quote)
-          in_quote = TRUE;
-      else if (c == '"' && in_quote)
-          in_quote = FALSE;
-			state = edges[state][c];
-			str[index++] = c;
+            if (c == '"' && !in_quote)
+                in_quote = TRUE;
+            else if (c == '"' && in_quote)
+                in_quote = FALSE;
+            state = edges[state][c];
+            str[index++] = c;
 		}
 	}
     if (Q->first == 0)

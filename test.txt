@@ -1,7 +1,5 @@
-SELECT op.nom, m.designationM
-FROM operateur op, qualif_sur qs, machine m, piece p
+SELECT op.nom
+FROM operateur op, qualif_sur qs
 WHERE   op.numero =  qs.numero 
- AND   qs.referenceM =  m.referenceM
- AND   p.referenceM =  m.referenceM
- AND   p.numero =  op.numero
+ AND   2 * (41 + 1) > 2 * (op.age + 1)
 ;

@@ -358,7 +358,7 @@ void set_tree(tree conds, joinTree T)
 
                 if (TMP == 0)
                 {
-                    get_id(Csel->T[ind]->L->T, &TMP);
+                    get_id(Csel->T[ind], &TMP);
                     if (TMP->father == 0 || (TMP->father != 0 && TMP->father->T->type != DOT) || !strcmp(JOIN->right->val->u.CS.T->name, TMP->father->L->T->T->u.str))
                         get = getColumn(JOIN->right->val->u.CS.T, TMP->T->u.str);
                     if (get != -1)
@@ -815,7 +815,7 @@ void engine(char *csv, char *sql)
     /*  Affichage des nom de colonnes du SELECT */
     for (i = 0; i < size_sel; i++)
         printf("%10s ", array_sel[i].T->columns[array_sel[i].col].name);
-    printf("\n");
+    printf("\n\n");
 
     /*  Application de l'algorithme du parcours de l'arbre de JOINTURE */
     nestedLoop(parcour, indices, size_from, 0);

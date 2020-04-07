@@ -97,7 +97,7 @@ void semantic_expr_where(tree T)
         else
         {
             get_id(focus->L->T, &param);
-            if (findTable(param->T->u.str) == 0)
+            if (param != 0 && findTable(param->T->u.str) == 0)
                 semantic_error(NOT_FOUND_COL, param->T->u.str);
             if (param != 0)
             {
@@ -161,7 +161,7 @@ void semantic_expr_where(tree T)
         else
         {
             get_id(focus->L->T, &param);
-            if (findTable(param->T->u.str) == 0)
+            if (param != 0 && findTable(param->T->u.str) == 0)
                 semantic_error(NOT_FOUND_COL, param->T->u.str);
             if (param != 0)
             {

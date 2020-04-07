@@ -279,18 +279,21 @@ void expr_where(queue Q, tree Expression, int *count_ID, token *R, stack S)
     list Li = 0;
     token T = dequeue(Q);
     *R = T;
-
     if (T != 0 && !is_keyword(T->type) && !is_delimiter(T->type) && !is_operator_join(T->type) && !is_operator_comp(T->type))
     {
         New = Tree(T, 0, 0);
         if (T->type == LPAREN)
         {
+            free(New->T), free(New);
             push(S);
             New2 = Tree(Token(EXPR_WHERE, 0, 0), 0, 0);
             expr_where(Q, New2, count_ID, R, S);
             New2->father = Expression;
             if (New2->L != 0)
+            {
                 add_tree(Expression, New2->L->T);
+                free(New2->T), free(New2->L), free(New2);
+            }
             else
                 lexical_error_where(W_EMPTY_PAREN_ERR);
             if (Expression->T->type == TIMES || Expression->T->type == DIVIDE)
@@ -301,6 +304,7 @@ void expr_where(queue Q, tree Expression, int *count_ID, token *R, stack S)
         }
         else if (T->type == RPAREN)
         {
+            free(New->T), free(New);
             x = pop(S);
             if (Expression->father == 0 && Expression->L == 0)
                 lexical_error_where(W_EMPTY_PAREN_ERR);
@@ -316,6 +320,12 @@ void expr_where(queue Q, tree Expression, int *count_ID, token *R, stack S)
             {
                 *R = T;
                 add_tree(Expression, New);
+                if (T->type == SEMICOLON || is_operator_join(T->type) || is_operator_comp(T->type) || is_keyword(T->type))
+                    return;
+                if (Expression->T->type == TIMES || Expression->T->type == DIVIDE)
+                    expr_where(Q, Expression->father, count_ID, R, S);
+                else
+                    expr_where(Q, Expression, count_ID, R, S);
                 return;
             }
             if (T != 0 && T->type != DOT)
@@ -343,11 +353,12 @@ void expr_where(queue Q, tree Expression, int *count_ID, token *R, stack S)
             Li->T->father = New;
             New->father = Expression;
             add_tree(Expression, New);
+            free(Li);
             expr_where(Q, New, count_ID, R, S);
         }
         else if (T->type == INT)
         {
-            if (Expression->L != 0 && (Expression->T->type == EXPR_WHERE||!is_operator_arith(Expression->T->type) || Expression->L->next != 0))
+            if (Expression->L != 0 && (Expression->T->type == EXPR_WHERE || !is_operator_arith(Expression->T->type) || Expression->L->next != 0))
                 lexical_error_where(W_OP_ERR);
             add_tree(Expression, New);
             if (Expression->T->type == DIVIDE || Expression->T->type == TIMES)
