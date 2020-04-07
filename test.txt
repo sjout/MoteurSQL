@@ -1,4 +1,4 @@
-SELECT age,
+SELECT age
 FROM operateur op, qualif_sur qs, machine m, piece p
 WHERE   numero =  numero 
  AND   referenceM =  referenceM
