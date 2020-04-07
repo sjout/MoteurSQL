@@ -49,6 +49,14 @@ static char *error_query[] =
     "Q_Erreur : Manque d'un WHERE.\n"
 };
 
+static char *error_semantic[] =
+{
+    "Erreur : Table inconnu -> ",
+    "Erreur : Colonne inconnu -> ",
+    "Erreur : Ambiguité, plusieurs tables du FROM possèdent une colonne -> ",
+    "Erreur : Comparaison entre deux types différents.\n"
+};
+
 void *check_malloc(int len)
 {
 	void *ptr = malloc(len);
@@ -102,5 +110,15 @@ void lexical_error_query(int x)
 void lexical_error_where(int x)
 {
     fprintf(stderr, "%s", error_where[x]);
+    exit(EXIT_FAILURE);
+}
+
+void semantic_error(int x, const char *str)
+{
+    if (str != 0)
+        fprintf(stderr, "%s %s\n", error_semantic[x], str);
+    else
+        fprintf(stderr, "%s\n", error_semantic[x]);
+
     exit(EXIT_FAILURE);
 }

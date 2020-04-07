@@ -67,16 +67,22 @@ void            add_conditionSelect(conditionSelect, tree);
 struct Table *  getTable(const char *);
 struct Table *  getTable_from(const char *);
 int             getColumn(struct Table *, char *);
+struct Table *  findTable(const char *);
 
 void            set_array_from(tree);
 joinTree        init_tree();
 void            set_tree(tree, joinTree);
 void            is_id_in(tree, const char *, tree *, int *);
 void            get_id(tree, tree *);
+void            get_dot(tree, tree *);
 void            count_id(tree, int *_ID);
 int             calculus(tree, int);
 
 bool            check_select(conditionSelect, int, struct Table *);
+bool            check_join(conditionJoin, int, struct Table *, struct pos *, int _len);
+
+void            free_joinTree(joinTree);
+
 void            engine(char *, char *);
 
 #endif

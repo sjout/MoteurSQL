@@ -2,13 +2,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include "tables.h"
 #include "util.h"
+#include "tables.h"
+#include "semantic.h"
 #include "parser.h"
+#include "lexer.h"
 #include "requetes.h"
 
-static struct Table *array_from = 0;
-static int           size_from  = 0;
+struct Table         *array_from = 0;
+int                   size_from  = 0;
 
 static struct select *array_sel = 0;
 static int            size_sel  = 0;
@@ -108,11 +110,23 @@ int getColumn(struct Table *T, char *str)
             return i;
     return -1;
 }
+struct Table *findTable(const char *col)
+{
+    int i = 0, j = 0;
+
+    for (i = 0; i < size_from; i++)
+        for (j = 0; j < array_from[i].width; j++)
+            if (!strcmp(col, array_from[i].columns[j].name))
+                return &(array_from[i]);
+
+    return 0;
+}
 
 void set_array_sel(tree select)
 {
     int i;
     list tmp = select->L;
+    tree param = 0;
 
     while (tmp != 0)
     {
@@ -124,8 +138,20 @@ void set_array_sel(tree select)
 
     for (i = 0; i < size_sel; i++)
     {
-        array_sel[i].T = getTable_from(tmp->T->L->T->L->T->T->u.str);
-        array_sel[i].col = getColumn(array_sel[i].T, tmp->T->L->T->L->next->T->T->u.str);
+        param = 0;
+        get_dot(tmp->T->L->T, &param);
+
+        if (param != 0)
+        {
+            array_sel[i].T = getTable_from(param->L->T->T->u.str);
+            array_sel[i].col = getColumn(array_sel[i].T, param->L->next->T->T->u.str);
+        }
+        else
+        {
+            get_id(tmp->T->L->T, &param);
+            array_sel[i].T = findTable(param->T->u.str);
+            array_sel[i].col = getColumn(array_sel[i].T, param->T->u.str);
+        }
         tmp = tmp->next;
     }
 }
@@ -249,11 +275,12 @@ void count_id(tree T, int *count_ID)
 void set_tree(tree conds, joinTree T)
 {
     assert(T != 0);
-    int count_ID = 0, ind = 0, k;
+    int count_ID = 0, ind = 0, k, get = 0;
     conditionJoin Cjoin = 0, Resjoin = 0;
     conditionSelect Csel = 0, Ressel = 0;
     tree TMP = conds;
     joinTree JOIN = T;
+    bool find = FALSE;
 
     if (conds == 0)
         return;
@@ -293,7 +320,6 @@ void set_tree(tree conds, joinTree T)
             Csel = ConditionSelect();
         add_conditionSelect(Csel, TMP);
     }
-
     while (JOIN != 0)
     {
         Resjoin = 0; Ressel = 0;
@@ -301,10 +327,19 @@ void set_tree(tree conds, joinTree T)
         {
             for (ind = 0; ind < Cjoin->count_element; ind++)
             {
-                TMP = 0, count_ID = 0;
+                TMP = 0, count_ID = 0, get = -1, find = FALSE;
                 is_id_in(Cjoin->T[ind], JOIN->right->val->u.CS.T->name, &TMP, &count_ID);
+                if (TMP == 0)
+                {
+                    get_id(Cjoin->T[ind], &TMP);
+                    if (TMP->father == 0 || (TMP->father != 0 && TMP->father->T->type != DOT) || !strcmp(JOIN->right->val->u.CS.T->name, TMP->father->L->T->T->u.str))
+                        get = getColumn(JOIN->right->val->u.CS.T, TMP->T->u.str);
 
-                if (TMP != 0)
+                    if (get != -1)
+                        find = TRUE;
+                    TMP = 0;
+                }
+                if (TMP != 0 || find)
                 {
                     if (Resjoin == 0)
                         Resjoin = ConditionJoin();
@@ -318,10 +353,19 @@ void set_tree(tree conds, joinTree T)
             }
             for (ind = 0; ind < Csel->count_element; ind++)
             {
-                TMP = 0, count_ID = 0;
+                TMP = 0, count_ID = 0, get = -1, find = FALSE;
                 is_id_in(Csel->T[ind], JOIN->right->val->u.CS.T->name, &TMP, &count_ID);
 
-                if (TMP != 0)
+                if (TMP == 0)
+                {
+                    get_id(Csel->T[ind]->L->T, &TMP);
+                    if (TMP->father == 0 || (TMP->father != 0 && TMP->father->T->type != DOT) || !strcmp(JOIN->right->val->u.CS.T->name, TMP->father->L->T->T->u.str))
+                        get = getColumn(JOIN->right->val->u.CS.T, TMP->T->u.str);
+                    if (get != -1)
+                        find = TRUE;
+                    TMP = 0;
+                }
+                if (TMP != 0 || find)
                 {
                     if (Ressel == 0)
                         Ressel = ConditionSelect();
@@ -344,10 +388,18 @@ void set_tree(tree conds, joinTree T)
         {
             for (ind = 0; ind < Csel->count_element; ind++)
             {
-                TMP = 0, count_ID = 0;
+                TMP = 0, count_ID = 0, get = -1, find = FALSE;
                 is_id_in(Csel->T[ind], JOIN->val->u.CS.T->name, &TMP, &count_ID);
-
-                if (TMP != 0)
+                if (TMP == 0)
+                {
+                    get_id(Csel->T[ind], &TMP);
+                    if (TMP->father == 0 || (TMP->father != 0 && TMP->father->T->type != DOT) || !strcmp(JOIN->val->u.CS.T->name, TMP->father->L->T->T->u.str))
+                        get = getColumn(JOIN->val->u.CS.T, TMP->T->u.str);
+                    if (get != -1)
+                        find = TRUE;
+                    TMP = 0;
+                }
+                if (TMP != 0 || find)
                 {
                     if (Ressel == 0)
                         Ressel = ConditionSelect();
@@ -372,6 +424,8 @@ int calculus(tree T, int val)
 
     if (T == 0)
         return 0;
+    if (T->T->type == ID)
+        return val;
     if (T->L == 0)
         return T->T->u.val;
     if (T->T->type == DOT)
@@ -448,6 +502,7 @@ bool check_select(conditionSelect Csel, int index, struct Table *T)
                     check = FALSE;
                 break;
             }
+            free(left_str), free(right_str);
         }
         else
         {
@@ -505,15 +560,32 @@ bool check_join(conditionJoin Cjoin, int index, struct Table *T, struct pos *ind
     for (i = 0; i < Cjoin->count_element && check; i++)
     {
         param = 0;
-
         get_dot(Cjoin->T[i]->L->T, &param);
-        left_table = getTable_from(param->L->T->T->u.str);
-        col_left = getColumn(left_table, param->L->next->T->T->u.str);
+        if (param != 0)
+        {
+            left_table = getTable_from(param->L->T->T->u.str);
+            col_left = getColumn(left_table, param->L->next->T->T->u.str);
+        }
+        else
+        {
+            get_id(Cjoin->T[i]->L->T, &param);
+            left_table = findTable(param->T->u.str);
+            col_left = getColumn(left_table, param->T->u.str);
+        }
+        param = 0;
 
         get_dot(Cjoin->T[i]->L->next->T, &param);
-        right_table = getTable_from(param->L->T->T->u.str);
-        col_right = getColumn(right_table, param->L->next->T->T->u.str);
-
+        if (param != 0)
+        {
+            right_table = getTable_from(param->L->T->T->u.str);
+            col_right = getColumn(right_table, param->L->next->T->T->u.str);
+        }
+        else
+        {
+            get_id(Cjoin->T[i]->L->next->T, &param);
+            right_table = findTable(param->T->u.str);
+            col_right = getColumn(right_table, param->T->u.str);
+        }
         if (left_table == T)
         {
             new_ind = getIndex(indices, curr_len, right_table);
@@ -533,12 +605,12 @@ bool check_join(conditionJoin Cjoin, int index, struct Table *T, struct pos *ind
                         check = FALSE;
                     break;
                 }
+                free(left_str), free(right_str);
             }
             else
             {
                 left_int = calculus(Cjoin->T[i]->L->T, left_table->content[index * left_table->width + col_left].value);
                 right_int = calculus(Cjoin->T[i]->L->next->T, right_table->content[new_ind * right_table->width + col_right].value);
-                printf("%s - %s\n", left_str, right_str);
 
                 switch(Cjoin->T[i]->T->type)
                 {
@@ -588,6 +660,7 @@ bool check_join(conditionJoin Cjoin, int index, struct Table *T, struct pos *ind
                         check = FALSE;
                     break;
                 }
+                free(left_str), free(right_str);
             }
             else
             {
@@ -709,32 +782,91 @@ void engine(char *csv, char *sql)
     struct pos *indices = 0;
     int i;
 
+    /*  Stockage des tables du fichier .csv */
     set_tables(csv);
+    /*  Création d'un arbre de syntaxe abstraite */
     code = check_open(sql);
     query = AST(code);
 
+    /*  Stockage du SELECT et du FROM */
+    semantic_expr_from(query->L->next->T);      /*  Analyse sémantique du FROM */
     set_array_from(query->L->next->T->L->T);
+    semantic_expr_sel(query->L->T);             /*  Analyse sémantique du SELECT */
     set_array_sel(query->L->T);
-    join = init_tree();
 
+    /*  Création de l'arbre de jointure */
+    join = init_tree();
     tmp = query->L;
     while (tmp != 0 && tmp->T->T->type != WHERE)
         tmp = tmp->next;
     if (tmp != 0)
+    {
+        semantic_expr_where(tmp->T->L->T);
         set_tree(tmp->T->L->T->L->T, join);
+    }
 
+    /*  Parcours pour démarrer de la dernière feuille la plus à gauche */
     parcour = join;
     indices = check_malloc(sizeof(struct pos) * size_from);
     parcour = join;
     while (parcour->left != 0)
         parcour = parcour->left;
 
+    /*  Affichage des nom de colonnes du SELECT */
     for (i = 0; i < size_sel; i++)
         printf("%10s ", array_sel[i].T->columns[array_sel[i].col].name);
     printf("\n");
 
+    /*  Application de l'algorithme du parcours de l'arbre de JOINTURE */
     nestedLoop(parcour, indices, size_from, 0);
 
+    /*  Libération de la mémoire */
+    free_joinTree(join);
+    free(indices);
+    free_ast(query);
+    free(array_sel), free(array_from);
     free_tables();
     fclose(code);
+}
+
+void free_joinTree(joinTree T)
+{
+    assert(T != 0);
+    joinTree tmp = T;
+    if (T->left == 0)
+    {
+        if (T->val->u.CS.C != 0)
+        {
+            free(T->val->u.CS.C->T);
+            free(T->val->u.CS.C);
+        }
+        free(T->val);
+        free(T);
+    }
+    else
+    {
+        tmp = T->left;
+        if (T->right->val->u.CS.C != 0)
+        {
+            free(T->right->val->u.CS.C->T);
+            free(T->right->val->u.CS.C);
+        }
+        free(T->right->val);
+        free(T->right);
+
+        if (T->val->type == COND_JOIN)
+        {
+            if (T->val->u.CJ != 0)
+            {
+                free(T->val->u.CJ->T);
+                free(T->val->u.CJ);
+            }
+            free(T->val);
+            free(T);
+        }
+        else
+            free(T->val), free(T);
+
+        free_joinTree(tmp);
+    }
 }

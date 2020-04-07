@@ -202,7 +202,14 @@ void expr_select(queue Q, tree Expression, int *count_ID, token *R)
         {
             if ((*count_ID) == 1)
                 lexical_error_select(S_COL_ERR);
-            if ((T = dequeue(Q)) != 0 && T->type != DOT)
+            T = dequeue(Q);
+            *R = T;
+            if (T != 0 && (T->type == COMMA || is_keyword(T->type)))
+            {
+                add_tree(Expression, New);
+                return;
+            }
+            if (T != 0 && T->type != DOT)
                 lexical_error_select(S_ID_ERR);
             Sep = Tree(T, Expression, 0);
             if ((T = dequeue(Q)) != 0 && T->type != ID)
@@ -213,10 +220,11 @@ void expr_select(queue Q, tree Expression, int *count_ID, token *R)
             add_tree(Sep, New), add_tree(Sep, New2);
             add_tree(Expression, Sep);
             (*count_ID)++;
-            if (Expression->T->type == TIMES || Expression->T->type == DIVIDE)
-                expr_select(Q, Expression->father, count_ID, R);
-            else
-                expr_select(Q, Expression, count_ID, R);
+            if ((T = dequeue(Q)) != 0 && T->type != COMMA && !is_keyword(T->type))
+                lexical_error_select(S_ID_ERR);
+            *R = T;
+
+            return;
         }
         else
             lexical_error_select(S_NOT_GRAM_ERR);
@@ -303,7 +311,14 @@ void expr_where(queue Q, tree Expression, int *count_ID, token *R, stack S)
         {
             if ((*count_ID) == 1)
                 lexical_error_where(W_COL_ERR);
-            if ((T = dequeue(Q)) != 0 && T->type != DOT)
+            T = dequeue(Q);
+            if (T != 0 && (T->type == SEMICOLON || is_keyword(T->type) || is_operator_comp(T->type) || is_operator_arith(T->type) || is_operator_join(T->type)))
+            {
+                *R = T;
+                add_tree(Expression, New);
+                return;
+            }
+            if (T != 0 && T->type != DOT)
                 lexical_error_where(W_ID_ERR);
             Sep = Tree(T, Expression, 0);
             if ((T = dequeue(Q)) != 0 && T->type != ID)
@@ -379,6 +394,9 @@ void expr_where_full(queue Q, tree Expression, token *R)
         operator = Tree(*R, 0, 0);
         left_op->L->T->father = operator;
         add_tree(operator, left_op->L->T);
+        free(left_op->T);
+        free(left_op->L);
+        free(left_op);
     }
     else
         lexical_error_where(W_NO_OP);
@@ -391,6 +409,9 @@ void expr_where_full(queue Q, tree Expression, token *R)
     {
         right_op->L->T->father = operator;
         add_tree(operator, right_op->L->T);
+        free(right_op->T);
+        free(right_op->L);
+        free(right_op);
     }
     else
         lexical_error_where(W_NO_AND_SEMICOL);
@@ -498,7 +519,11 @@ void query_tree(queue Q, tree T)
     if (R == 0)
         lexical_error_query(Q_NO_SEMICOL);
     else
+    {
+        if (R->type == ID || R->type == STRING)
+            free(R->u.str);
         free(R);
+    }
 
     check_query(T);
 }
@@ -538,13 +563,43 @@ void print_tree(tree T, int i)
     }
 }
 
-tree AST(FILE *f)
+tree AST(FILE *ptr)
 {
-	queue Q = lexer(f);
 	tree T = Tree(Token(QUERY, 0, 0), 0, 0);
+    queue Q = lexer(ptr);
 	query_tree(Q, T);
 
-	free_lexer(Q);
+    free_lexer(Q);
 
 	return T;
+}
+
+void free_ast(tree T)
+{
+    list tmp = T->L, backup = T->L;
+    tree save = 0;
+
+    if (T->L != 0) 
+    {
+        while (tmp != 0)
+        {
+            save = tmp->T;
+            backup = tmp->next;
+            free(tmp);
+            T->L = backup;
+            tmp = backup;
+            free_ast(save);
+        }
+    }
+
+    if (T->L == 0)
+    {
+        if (T->T->type == ID || T->T->type == STRING)
+            free(T->T->u.str);
+        free(T->T);
+        free(T);
+    }
+
+    if (T == 0)
+        return;
 }

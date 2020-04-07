@@ -219,7 +219,6 @@ void set_tables(const char *const path)
         set_name(str, ind, count);
         free(str);
         count++;
-        
         if (Q->first == 0)
             is_error(SYNT_ERR, count);
 

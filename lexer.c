@@ -71,18 +71,18 @@ static int action[] =
 
 static int delimiters[][2] =
 {
-	{'.', DOT},
-	{',', COMMA},
-	{';', SEMICOLON},
-	{'(', LPAREN},
-	{')', RPAREN},
-	{'=', EQ},
-	{'>', GT},
-	{'<', LT},
-  {'+', PLUS},
-  {'-', MINUS},
-  {'*', TIMES},
-  {'+', DIVIDE}
+    {'.', DOT},
+    {',', COMMA},
+    {';', SEMICOLON},
+    {'(', LPAREN},
+    {')', RPAREN},
+    {'=', EQ},
+    {'>', GT},
+    {'<', LT},
+    {'+', PLUS},
+    {'-', MINUS},
+    {'*', TIMES},
+    {'+', DIVIDE}
 };
 
 void set_edges(int state, char start, char end, int at)
@@ -117,6 +117,7 @@ void set_automata()
 	set_edges(5, 'a', 'z', 5);
 	set_edges(5, 'A', 'Z', 5);
 	set_edges(5, '1', '9', 5);
+	set_edges(5, ' ', ' ', 5);
 	set_edges(5, '_', '_', 5);
 	set_edges(5, '"', '"', 20);
 
@@ -222,7 +223,7 @@ queue lexer(FILE *file)
 	queue Q = Queue(0);
 	token T = 0;
 	int c = 0, tmp = 0, pos = 0, state = 1, index = 0, size = 7;
-	bool good = TRUE, free_str = FALSE;
+	bool good = TRUE, free_str = FALSE, in_quote = FALSE;
 	string str = check_malloc(sizeof(char) * size);
     string tmp_str = 0;
 	str[size - 1] = '\0';
@@ -303,15 +304,22 @@ queue lexer(FILE *file)
 				str[size - 1] = '\0';
 			}
 		}
-		else if (c == '\n' || c == '\r' || c == '\t' || c == ' ')
+		else if (c == '\n' || c == '\r' || c == '\t' || (c == ' ' && !in_quote))
 		{
 			if (index != 0)
 			{
 				str[index] = '\0';
 				if (action[state] == -1)
-                    syntax_error(str);
-				if (action[state] == ID || action[state] == STRING)
+            syntax_error(str);
+				if (action[state] == ID)
 					free_str = FALSE, T = Token(action[state], 0, str);
+        else if (action[state] == STRING)
+        {
+            tmp_str = check_malloc(sizeof(char) * (strlen(str) - 1));
+            tmp_str[strlen(str) - 2] = '\0';
+            strncpy(tmp_str, str + 1, strlen(str) - 2);
+            T = Token(action[state], 0, tmp_str);
+        }
 				else if (action[state] == INT)
 					T = Token(action[state], atoi(str), 0);
 				else
@@ -331,6 +339,10 @@ queue lexer(FILE *file)
 				str = check_realloc(str, size);
 				str[size - 1] = '\0';
 			}
+      if (c == '"' && !in_quote)
+          in_quote = TRUE;
+      else if (c == '"' && in_quote)
+          in_quote = FALSE;
 			state = edges[state][c];
 			str[index++] = c;
 		}

@@ -58,11 +58,16 @@ FILE *      check_open(const char *);
 #define Q_NO_FROM         7
 #define Q_NO_WHERE        8
 
+#define NOT_FOUND_TABLE   0
+#define NOT_FOUND_COL     1
+#define IS_STRANGE        2
+#define TYPE_ERR          3
+
 void        syntax_error(const char *);
 void        lexical_error_select(int);
 void        lexical_error_from(int);
 void        lexical_error_where(int);
 void        lexical_error_query(int);
-void        semantic_error(int);
+void        semantic_error(int, const char *);
 
 #endif

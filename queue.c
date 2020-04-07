@@ -26,7 +26,6 @@ void add_queue(struct Queue *Q, char *str)
 
     assert(Q != 0 && str != 0);
 
-    e->str = (char *) malloc(sizeof(char) * (strlen(str) + 1));
     e->str = check_malloc(sizeof(char) * (strlen(str) + 1));
     strcpy(e->str, str);
 
@@ -34,7 +33,7 @@ void add_queue(struct Queue *Q, char *str)
     {
         Q->first = e;
     }
-    else 
+    else
     {
         tmp = Q->first;
         while (tmp->next != 0)

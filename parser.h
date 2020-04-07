@@ -41,8 +41,9 @@ void    expr_where(queue, tree, int *, token *, stack);
 void    expr_where_full(queue, tree, token *);
 void    query_tree(queue, tree);
 void    check_query(tree);
-tree 	AST(FILE *);
+tree 	AST(FILE*);
 
 void 	print_tree(tree, int);
+void    free_ast(tree);
 
 #endif
