@@ -869,24 +869,3 @@ void free_joinTree(joinTree T)
         free_joinTree(tmp);
     }
 }
-
-void debug_tree(joinTree *T)
-{
-    joinTree TMP = *T, SAVE = 0, parcour = 0;
-
-    while (TMP != 0 && TMP->left != 0)
-    {
-        parcour = TMP->left;
-        if (TMP->val->type == PROD_CARTE)
-        {
-            SAVE = TMP;
-            if (TMP->father != 0)
-            {
-                TMP->father->left = TMP->left;
-                SAVE->left = *T;
-                *T = SAVE;
-            }
-        }
-        TMP = parcour;
-    }
-}
