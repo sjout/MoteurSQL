@@ -223,7 +223,7 @@ queue lexer(FILE *file)
 	queue Q = Queue(0);
 	token T = 0;
 	int c = 0, tmp = 0, pos = 0, state = 1, index = 0, size = 7;
-	bool good = TRUE, free_str = FALSE, in_quote = FALSE;
+	bool good = TRUE, free_str = FALSE, in_quote = FALSE, get = FALSE;
 	string str = check_malloc(sizeof(char) * size);
     string tmp_str = 0;
 	str[size - 1] = '\0';
@@ -233,6 +233,7 @@ queue lexer(FILE *file)
 	while ((c = fgetc(file)) != EOF && good)
 	{
 		free_str = TRUE;
+        get = FALSE;
 		if ((val = is_delim(c)) != -1)
 		{
 			if (index != 0)

@@ -324,12 +324,14 @@ void set_tree(tree conds, joinTree T)
         Resjoin = 0; Ressel = 0;
         if (JOIN->right != 0)
         {
+            printf("%d\n", Cjoin->count_element);
             for (ind = 0; ind < Cjoin->count_element; ind++)
             {
                 TMP = 0, count_ID = 0, get = -1, find = FALSE;
                 is_id_in(Cjoin->T[ind], JOIN->right->val->u.CS.T->name, &TMP, &count_ID);
                 if (TMP == 0)
                 {
+                    printf("%s\n", JOIN->right->val->u.CS.T->name);
                     get_id(Cjoin->T[ind], &TMP);
                     if (TMP->father == 0 || (TMP->father != 0 && TMP->father->T->type != DOT) || !strcmp(JOIN->right->val->u.CS.T->name, TMP->father->L->T->T->u.str))
                         get = getColumn(JOIN->right->val->u.CS.T, TMP->T->u.str);
@@ -348,6 +350,7 @@ void set_tree(tree conds, joinTree T)
                         Cjoin->T[k] = Cjoin->T[k + 1];
                     Cjoin->count_element -= 1;
                     ind -= 1;
+                    printf("Indice : %d\n", Cjoin->count_element);
                 }
             }
             for (ind = 0; ind < Csel->count_element; ind++)
@@ -369,9 +372,9 @@ void set_tree(tree conds, joinTree T)
                     if (Ressel == 0)
                         Ressel = ConditionSelect();
                     add_conditionSelect(Ressel, Csel->T[ind]);
-                    for (k = ind; k < Cjoin->count_element - 1; k++)
-                        Cjoin->T[k] = Cjoin->T[k + 1];
-                    Cjoin->count_element -= 1;
+                    for (k = ind; k < Csel->count_element - 1; k++)
+                        Csel->T[k] = Csel->T[k + 1];
+                    Csel->count_element -= 1;
                 }
             }
             if (Ressel != 0)
@@ -803,6 +806,12 @@ void engine(char *csv, char *sql)
         semantic_expr_where(tmp->T->L->T);
         set_tree(tmp->T->L->T->L->T, join);
     }
+    joinTree test = join;
+    while (test != 0)
+    {
+        printf("%d\n", test->val->type);
+        test = test->left;
+    }
 
     /*  Parcours pour démarrer de la dernière feuille la plus à gauche */
     parcour = join;
@@ -867,5 +876,26 @@ void free_joinTree(joinTree T)
             free(T->val), free(T);
 
         free_joinTree(tmp);
+    }
+}
+
+void debug_tree(joinTree *T)
+{
+    joinTree TMP = *T, SAVE = 0, parcour = 0;
+
+    while (TMP != 0 && TMP->left != 0)
+    {
+        parcour = TMP->left;
+        if (TMP->val->type == PROD_CARTE)
+        {
+            SAVE = TMP;
+            if (TMP->father != 0)
+            {
+                TMP->father->left = TMP->left;
+                SAVE->left = *T;
+                *T = SAVE;
+            }
+        }
+        TMP = parcour;
     }
 }

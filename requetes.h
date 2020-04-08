@@ -77,6 +77,7 @@ void            get_id(tree, tree *);
 void            get_dot(tree, tree *);
 void            count_id(tree, int *_ID);
 int             calculus(tree, int);
+void            debug_tree(joinTree *);
 
 bool            check_select(conditionSelect, int, struct Table *);
 bool            check_join(conditionJoin, int, struct Table *, struct pos *, int _len);
