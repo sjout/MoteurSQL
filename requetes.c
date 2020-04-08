@@ -324,14 +324,12 @@ void set_tree(tree conds, joinTree T)
         Resjoin = 0; Ressel = 0;
         if (JOIN->right != 0)
         {
-            printf("%d\n", Cjoin->count_element);
             for (ind = 0; ind < Cjoin->count_element; ind++)
             {
                 TMP = 0, count_ID = 0, get = -1, find = FALSE;
                 is_id_in(Cjoin->T[ind], JOIN->right->val->u.CS.T->name, &TMP, &count_ID);
                 if (TMP == 0)
                 {
-                    printf("%s\n", JOIN->right->val->u.CS.T->name);
                     get_id(Cjoin->T[ind], &TMP);
                     if (TMP->father == 0 || (TMP->father != 0 && TMP->father->T->type != DOT) || !strcmp(JOIN->right->val->u.CS.T->name, TMP->father->L->T->T->u.str))
                         get = getColumn(JOIN->right->val->u.CS.T, TMP->T->u.str);
@@ -350,7 +348,6 @@ void set_tree(tree conds, joinTree T)
                         Cjoin->T[k] = Cjoin->T[k + 1];
                     Cjoin->count_element -= 1;
                     ind -= 1;
-                    printf("Indice : %d\n", Cjoin->count_element);
                 }
             }
             for (ind = 0; ind < Csel->count_element; ind++)
@@ -805,12 +802,6 @@ void engine(char *csv, char *sql)
     {
         semantic_expr_where(tmp->T->L->T);
         set_tree(tmp->T->L->T->L->T, join);
-    }
-    joinTree test = join;
-    while (test != 0)
-    {
-        printf("%d\n", test->val->type);
-        test = test->left;
     }
 
     /*  Parcours pour démarrer de la dernière feuille la plus à gauche */

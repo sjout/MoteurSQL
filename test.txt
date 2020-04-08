@@ -1,7 +1,7 @@
-SELECT nom, age, op.numero, designationM
-FROM operateur op, qualif_sur qs, machine m, piece p
-WHERE  qs.numero = op.numero
-AND    op.numero = p.numero
-AND    p.referenceM = m.referenceM
-AND    m.designationM = "Tour numerique"
+SELECT nom, age, referenceP, designationP, designationM
+FROM operateur op, piece p, qualif_sur qs, machine m
+WHERE  op.numero =  p.numero 
+ AND   p.referenceM =  m.referenceM
+ AND   qs.numero =  op.numero
+ AND   m.designationM = "Tour numerique"
 ;
