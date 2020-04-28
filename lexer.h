@@ -39,6 +39,7 @@
 # define EXPR_RIGHT 289
 # define RENAME     290
 
+/*  Représentation d'un token qui correspond à chaque mot acceptable par le langage */
 struct token_
 {
     int type;
@@ -50,6 +51,7 @@ struct token_
 };
 typedef struct token_ *token;
 
+/*  Représentation d'un élement de la file qui va correspondre à un Token */
 struct node_
 {
     token           T;
@@ -63,22 +65,26 @@ struct queue_
 typedef struct node_ *  node;
 typedef struct queue_ * queue;
 
+/* Constructeur */
 node    Node(token, node);
 queue   Queue(node);
+token   Token(int, int, string);
 
+/* Ajout et Retrait d'un élement de la file */
 void    enqueue(queue, token);
 token   dequeue(queue);
 
-token   Token(int, int, string);
-
+/* Vérifie si un char est un delimiter */
 int     is_delim(int);
 
-void    set_edges(int, char, char, int);
-void    set_automata();
-queue   lexer(FILE *);
+/* Gestion de l'automate */
+void    set_edges(int, char, char, int); /* Mise en place des relations entre les états */
+void    set_automata();                  /* Mise en place de l'automate */
 
-void    free_lexer(queue);
+/*  Lexer */
+queue   lexer(FILE *);                   /* Retourne une file de token */
+void    free_lexer(queue);               /* Libération de la mémoire */
 
-string  id_to_str(int);
+string  id_to_str(int);                  /* Conversion d'un id (int) en string */
 
 #endif

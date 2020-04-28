@@ -174,6 +174,7 @@ void set_tables(const char *const path)
     struct Queue *Q = 0;
     int *table_lenght = 0;
     int count = 0, ind = 0, pos = 0, k = 0;
+    size = 0;
 
     if (!(file = fopen(path, "r")))
         is_error(FILE_ERR, -1);

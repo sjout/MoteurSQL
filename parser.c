@@ -7,12 +7,14 @@
 #include "parser.h"
 #include "stack.h"
 
+/* Tableau de delimiteur accepté */
 static int delimiter[] =
 {
     COMMA,
     SEMICOLON
 };
 
+/* Tableau d'opérateur binaire accepté */
 static int op_bin[] =
 {
     PLUS,
@@ -21,6 +23,7 @@ static int op_bin[] =
     DIVIDE,
 };
 
+/* Tableau d'opérateur de comparaison accepté */
 static int operator_comp[] =
 {
     EQ,
@@ -31,12 +34,14 @@ static int operator_comp[] =
     GE
 };
 
+/* Tableau d'opérateur de jointure */
 static int operator_join[] =
 {
-    AND,
-    OR
+    AND
+    /* OR */
 };
 
+/* Tableau de keyword accepté */
 static int keyword[] =
 {
     SEL,
@@ -44,6 +49,7 @@ static int keyword[] =
     WHERE
 };
 
+/* Tableau d'agrégat accepté */
 static int agregate[] =
 {
     MAX,
@@ -70,6 +76,7 @@ tree Tree(token T, tree F, list L)
     return New;
 }
 
+/* Fonction d'ajout d'un fils N à un arbre T */
 void add_tree(tree T, tree N)
 {
     assert(T != 0);
@@ -87,6 +94,7 @@ void add_tree(tree T, tree N)
         ptr->next = New;
     }
 }
+/* Fonction d'ajout d'une liste N à une liste L */
 void add_list(list L, list N)
 {
     assert(L != 0 && N != 0);
@@ -96,6 +104,7 @@ void add_list(list L, list N)
         T = T->next;
     T->next = N;
 }
+/* Retourne le dernier élement de la liste L */
 list get_last(list L)
 {
     assert(L != 0);
@@ -107,6 +116,10 @@ list get_last(list L)
     return tmp;
 
 }
+/*
+ *  Retourne le dernier élement de la liste des fils de T
+ *  en le retirant de la liste des fils
+ */
 list get_last_and_replace(tree T)
 {
     assert(T != 0 && T->L != 0);
@@ -189,6 +202,10 @@ bool is_agregate(int x)
     return in;
 }
 
+/*
+ *  Définition de la grammaire accepté dans le SELECT.
+ *  Remplissage de l'arbre Expression.
+ */
 void expr_select(queue Q, tree Expression, int *count_ID, token *R)
 {
     tree New = 0, Sep = 0, New2 = 0;
@@ -232,6 +249,10 @@ void expr_select(queue Q, tree Expression, int *count_ID, token *R)
     else
         return;
 }
+/*
+ *  Définition de la grammaire accepté dans le FROM.
+ *  Remplissage de l'arbre Expression.
+ */
 void expr_from(queue Q, tree Expression, int *count_ID, token *R)
 {
     tree New = 0, New2 = 0, Table = 0;
@@ -272,6 +293,10 @@ void expr_from(queue Q, tree Expression, int *count_ID, token *R)
     else
         return;
 }
+/*
+ *  Définition de la grammaire accepté pour un membre d'une comparaison dans le WHERE.
+ *  Remplissage de l'arbre Expression.
+ */
 void expr_where(queue Q, tree Expression, int *count_ID, token *R, stack S)
 {
     int x;
@@ -387,6 +412,10 @@ void expr_where(queue Q, tree Expression, int *count_ID, token *R, stack S)
         return;
     }
 }
+/*
+ *  Défintion de la grammaire accepté pour une comparaison du WHERE.
+ *  Remplissage de l'arbre Expression.
+ */
 void expr_where_full(queue Q, tree Expression, token *R)
 {
     tree left_op = Tree(Token(EXPR_WHERE, 0, 0), 0, 0);
@@ -455,6 +484,7 @@ void expr_where_full(queue Q, tree Expression, token *R)
     free_stack(S);
 }
 
+/* Remplssage de l'arbre T de façon à ce qu'il soit l'arbre de la requête */
 void query_tree(queue Q, tree T)
 {
     assert(Q != 0 && T != 0);
@@ -543,6 +573,7 @@ void query_tree(queue Q, tree T)
     check_query(T);
 }
 
+/* Vérification de l'odre des keyword */
 void check_query(tree T)
 {
     assert(T != 0);
@@ -560,6 +591,7 @@ void check_query(tree T)
         lexical_error_query(Q_NO_WHERE);
 }
 
+/* Affichage de l'arbre */
 void print_tree(tree T, int i)
 {
 	list tmp = T->L;
@@ -578,6 +610,7 @@ void print_tree(tree T, int i)
     }
 }
 
+/* Retourne l'arbre de la requête */
 tree AST(FILE *ptr)
 {
 	tree T = Tree(Token(QUERY, 0, 0), 0, 0);
@@ -589,6 +622,7 @@ tree AST(FILE *ptr)
 	return T;
 }
 
+/* Libération de la mémoire */
 void free_ast(tree T)
 {
     list tmp = T->L, backup = T->L;

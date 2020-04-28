@@ -10,12 +10,12 @@
 #include "requetes.h"
 
 struct Table         *array_from = 0;
-int                   size_from  = 0;
+int                  size_from  = 0;
 
 static struct select *array_sel = 0;
-static int            size_sel  = 0;
+static int           size_sel  = 0;
 
-extern struct Table *array_tables;
+extern struct Table  *array_tables;
 extern int           size;
 
 conditionJoin ConditionJoin()
@@ -82,6 +82,7 @@ void add_conditionSelect(conditionSelect Csel, tree T)
     Csel->T[Csel->count_element++] = T;
 }
 
+/* Retourne une table depuis sont nom */
 struct Table *getTable(const char *name)
 {
     int i = 0;
@@ -92,6 +93,7 @@ struct Table *getTable(const char *name)
 
     return 0;
 }
+/* Retourne une table depuis le FROM à partir de son nom */
 struct Table *getTable_from(const char *name)
 {
     int i = 0;
@@ -102,6 +104,7 @@ struct Table *getTable_from(const char *name)
 
     return 0;
 }
+/* Retourne la colonne nommé str depuis la table T */
 int getColumn(struct Table *T, char *str)
 {
     int i = 0;
@@ -110,6 +113,7 @@ int getColumn(struct Table *T, char *str)
             return i;
     return -1;
 }
+/* Retourne une table contenant la colonne nommé col */
 struct Table *findTable(const char *col)
 {
     int i = 0, j = 0;
@@ -122,12 +126,13 @@ struct Table *findTable(const char *col)
     return 0;
 }
 
+/* Initialisation du tableau qui contiennt les élements du SELECT */
 void set_array_sel(tree select)
 {
     int i;
     list tmp = select->L;
     tree param = 0;
-
+    size_sel = 0;
     while (tmp != 0)
     {
         size_sel++;
@@ -154,11 +159,13 @@ void set_array_sel(tree select)
         tmp = tmp->next;
     }
 }
+/* Initialisation du tableau qui contient les tables du FROM */
 void set_array_from(tree from)
 {
     struct Table *T = 0;
     list li = from->L;
     int i = 0;
+    size_from = 0;
 
     while (li != 0)
     {
@@ -195,6 +202,7 @@ void set_array_from(tree from)
         li = li->next;
     }
 }
+/* Création de l'arbre de jointure avec les produits cartésien sans prendre en compte le WHERE */
 joinTree init_tree()
 {
     assert(size_from > 0);
@@ -222,6 +230,7 @@ joinTree init_tree()
 
     return root;
 }
+/* Verifie si un token de type ID nommé str est dans l'arbre T */
 void is_id_in(tree T, const char *str, tree *param, int *count_ID)
 {
     assert(str != 0);
@@ -236,6 +245,7 @@ void is_id_in(tree T, const char *str, tree *param, int *count_ID)
     if (T->L != 0 && T->L->next != 0)
         is_id_in(T->L->next->T, str, param, count_ID);
 }
+/* Renvoie un ID présent dans l'arbre T via param */
 void get_id(tree T, tree *param)
 {
     if (T == 0)
@@ -249,6 +259,7 @@ void get_id(tree T, tree *param)
     if (T->L != 0 && T->L->next != 0)
         get_id(T->L->next->T, param);
 }
+/* Renvoie une DOT présent dans l'arbre T via param */
 void get_dot(tree T, tree *param)
 {
     if (T == 0)
@@ -260,6 +271,7 @@ void get_dot(tree T, tree *param)
     if (T->L != 0 && T->L->next != 0)
         get_dot(T->L->next->T, param);
 }
+/* Compte le nombre d'ID dans l'abre T */
 void count_id(tree T, int *count_ID)
 {
     if (T == 0)
@@ -271,6 +283,7 @@ void count_id(tree T, int *count_ID)
     if (T->L != 0 && T->L->next != 0)
         count_id(T->L->next->T, count_ID);
 }
+/* Mise en place de l'arbre de jointure T depuis les conditions du WHERE conds */
 void set_tree(tree conds, joinTree T)
 {
     assert(T != 0);
@@ -417,6 +430,7 @@ void set_tree(tree conds, joinTree T)
     free(Cjoin->T), free(Cjoin);
     free(Csel->T), free(Csel);
 }
+/* Calcul une expression arithmétique du WHERE */
 int calculus(tree T, int val)
 {
     int left = 0, right = 0;
@@ -443,6 +457,7 @@ int calculus(tree T, int val)
     return 0;
 }
 
+/* Renvoie l'index actuel de l'élement du tableau de pos contenant la table T */
 int getIndex(struct pos *indices, const int max_len, struct Table *T)
 {
     int i;
@@ -454,6 +469,7 @@ int getIndex(struct pos *indices, const int max_len, struct Table *T)
     }
     return -1;
 }
+/* VRAI si une conditon de selection est validé sur une ligne sinon FAUX*/
 bool check_select(conditionSelect Csel, int index, struct Table *T)
 {
     int i = 0, col = 0;
@@ -547,6 +563,7 @@ bool check_select(conditionSelect Csel, int index, struct Table *T)
 
     return check;
 }
+/* VRAI si une condition de jointure est valide sur une ligne sinon FAUX */
 bool check_join(conditionJoin Cjoin, int index, struct Table *T, struct pos *indices, int curr_len)
 {
     bool check = TRUE;
@@ -698,6 +715,10 @@ bool check_join(conditionJoin Cjoin, int index, struct Table *T, struct pos *ind
 
     return check;
 }
+/*
+ *  Algorithme de parcours de l'arbre de jointure T à partir de boucle imbriqué.
+ *  Complexité : O(n^(size_from))
+ */
 void nestedLoop(joinTree T, struct pos *indices, const int max_len, int curr_len)
 {
     int i = 0, j = 0;
@@ -772,6 +793,7 @@ void nestedLoop(joinTree T, struct pos *indices, const int max_len, int curr_len
     }
 }
 
+/* Algorithme de mise en marche du moteur de requêtes */
 void engine(char *csv, char *sql)
 {
     FILE *code = 0;
@@ -828,6 +850,7 @@ void engine(char *csv, char *sql)
     fclose(code);
 }
 
+/* Libération de la mémoire */
 void free_joinTree(joinTree T)
 {
     assert(T != 0);

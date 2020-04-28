@@ -5,6 +5,7 @@
 #include "util.h"
 #include "lexer.h"
 
+/* Tableau representant les états de l'automate */
 static int edges[][256] =
 {
 	{0},		/*  State 0  */
@@ -37,6 +38,7 @@ static int edges[][256] =
 	{0},		/*  State 27 */
 };
 
+/* Tableau representant l'action à produire si l'on est à un état final */
 static int action[] =
 {
 	-1,     /*  State 0  */
@@ -69,6 +71,7 @@ static int action[] =
 	TIMES,	/*  State 27 */
 };
 
+/* Delimiters du langage accepté */
 static int delimiters[][2] =
 {
     {'.', DOT},
@@ -85,6 +88,7 @@ static int delimiters[][2] =
     {'+', DIVIDE}
 };
 
+/* Changement d'état de l'automate pour les caractères ASCII de start à end */
 void set_edges(int state, char start, char end, int at)
 {
 	int i;
@@ -93,6 +97,7 @@ void set_edges(int state, char start, char end, int at)
 		edges[state][i] = at;
 }
 
+/* Mise en place de l'automate */
 void set_automata()
 {
 	set_edges(1, 'S', 'S', 2);
@@ -141,9 +146,10 @@ void set_automata()
 	set_edges(1, '*', '*', 27);
 }
 
+/* Vérification si x est un délimiteur du langage */
 int is_delim(int x)
 {
-	int i = 0;
+	unsigned int i = 0;
 
 	for (i = 0; i < (sizeof(delimiters) / sizeof(*delimiters)); i++)
 		if (delimiters[i][0] == x)
@@ -218,6 +224,10 @@ token dequeue(queue Q)
     return T;
 }
 
+/*
+ *  Lexer qui prend en compte le fichier file et retourne une file de token representant
+ *  chaque chaque mot du langage extrait du fichier.
+*/
 queue lexer(FILE *file)
 {
 	queue Q = Queue(0);
@@ -387,6 +397,9 @@ queue lexer(FILE *file)
 	return Q;
 }
 
+/*
+ *  Libération de la mémoire de la file retourné par le lexer
+*/
 void free_lexer(queue Q)
 {
 	token T = dequeue(Q);
