@@ -1,5 +1,0 @@
-SELECT nom, operateur.numero
-   FROM machine mach , operateur op , qualif_sur , piece, piece
-   WHERE piece.numero = op.numero
-   AND mach.referenceM = qualif_sur.referenceM
-   ;
