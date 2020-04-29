@@ -33,7 +33,6 @@ static void is_error(const int i, const int n)
     else 
         fprintf(stderr, "%s", errors[i]);
     exit(EXIT_FAILURE);
-    
 }
 
 /*
@@ -47,7 +46,7 @@ char ** csv_parser_line(const char *str, const int n)
 
     while (str[index] != '\0' && str[index] != '\n' && str[index] != '\r')
     {
-        if (str[index] == ',')
+        if (str[index] == ',' && !in_quotes)
             count++;
         if (str[index] == '"' && !in_quotes)
             in_quotes = TRUE;

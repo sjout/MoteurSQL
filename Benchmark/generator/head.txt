@@ -1,0 +1,9 @@
+"partsupp"
+"partkey : int", "suppkey : int", "availqty : int", "supplycost : int", "comment : string"
+
+"suppliers"
+"suppkey : int", "name : string", "address : string", "nationkey : int", "phone : string", "acctbal : int", "comment : string"
+
+"part"
+"partkey : int", "name : string", "mfgr : string", "brand : string", "type : string", "size : int", "container : string", "retailprice : int", "comment : string"
+

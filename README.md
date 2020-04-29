@@ -1,2 +1,2 @@
 # MoteurSQL
-Moteur de Requêtes SQL en C
+Moteur de Requêtes SQL en C.

@@ -124,7 +124,7 @@ void set_columns(const char *const str, const int pos, const int n)
 void set_data(const char *const str, const int pos, const int index, const int n)
 {
     char **split = csv_parser_line(str, n);
-    int i = 0, j = 0, k = 0, tmp = 0;
+    int i = 0, j = 0, k = 0, tmp = 0, count_dot = 0;
 
     for (i = 0; split[i] != 0; i++);
     if (i != array_tables[pos].width)
@@ -140,10 +140,16 @@ void set_data(const char *const str, const int pos, const int index, const int n
         }
         else
         {
-            for (j = 0; j < strlen(split[i]);j++)
+	    count_dot = 0;
+            for (j = (split[i][0] == '-' ? 1 : 0); j < strlen(split[i]);j++)
             {
-                if ((split[i][j] < '0' || split[i][j] > '9') && split[i][j] != ' ' && split[i][j] != '\t')
+		if (split[i][j] == '.')
+		    count_dot++;
+		else if ((split[i][j] < '0' || split[i][j] > '9') && split[i][j] != ' ' && split[i][j] != '\t')
                     printf("3\n"), is_error(SYNT_ERR, n);
+		if (count_dot > 1)
+                    printf("4\n"), is_error(SYNT_ERR, n);
+
                 if (split[i][j] == ' ')
                 {
                     tmp = j;
@@ -154,7 +160,7 @@ void set_data(const char *const str, const int pos, const int index, const int n
                     split[i][j] = '\0';
                 }
             }
-            array_tables[pos].content[index * array_tables[pos].width + i].value = atoi(split[i]);
+            array_tables[pos].content[index * array_tables[pos].width + i].value = strtof(split[i], NULL);
         }
     }
     for (i = 0; split[i] != 0; i++)

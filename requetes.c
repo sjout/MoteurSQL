@@ -734,7 +734,7 @@ void nestedLoop(joinTree T, struct pos *indices, const int max_len, int curr_len
                     if (indices[j].T->columns[array_sel[i].col].is_string)
                         printf("%10s ", indices[j].T->content[indices[j].T->width * indices[j].index + array_sel[i].col].str);
                     else
-                    printf("%10d ", indices[j].T->content[indices[j].T->width * indices[j].index + array_sel[i].col].value);
+		        printf("%10f ", indices[j].T->content[indices[j].T->width * indices[j].index + array_sel[i].col].value);
                 }
             }
         }

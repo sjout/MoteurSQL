@@ -10,7 +10,7 @@ struct Table;               /* Structure representant une Table. */
 struct Data
 {
     char                    *str;           /* Valeur d'une donnée de type String. */
-    int                     value;          /* Valeur d'une donnée de type Int. */
+    float                   value;          /* Valeur d'une donnée de type Int. */
 };
 
 struct Column

@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "util.h"
+#include "requetes.h"
 #include "parser.h"
 #include "lexer.h"
-#include "tables.h"
-#include "requetes.h"
-#include "csv_parseur.h"
 #include "queue.h"
-#include <time.h>
+#include "tables.h"
+#include "csv_parseur.h"
 
 struct Table *array_tables = 0;
 int size = 0;
