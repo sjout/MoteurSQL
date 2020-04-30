@@ -6,7 +6,9 @@
 #define TRUE 	1
 #define FALSE 	0
 
+#ifndef bool
 typedef char 	bool;
+#endif
 typedef char*	string;
 
 string		String(const char *);
